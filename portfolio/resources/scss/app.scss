@@ -1,1 +1,10 @@
-@import '~bootstrap/scss/bootstrap'
+@import '~bootstrap/scss/bootstrap';
+// show
+div#show{
+    div.img{
+        width: 250px;
+        img{
+            width: 100%;
+        }
+    }
+}

@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 use Faker\Generator as Faker;
+use illuminate\Support\Str;
 use App\Models\Project;
 
 class ProjectTableSeeder extends Seeder
@@ -21,8 +21,9 @@ class ProjectTableSeeder extends Seeder
             $project = new Project();
             $project->title = $faker->sentence(3);
             $project->slug = Str::slug($project->title, '-');
-            $project->description = $faker->text(500);
+            $project->content = $faker->text(500);
             $project->save();
+            // php artisan db:seed
         }
     }
 }
