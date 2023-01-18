@@ -1,10 +1,13 @@
 @import '~bootstrap/scss/bootstrap';
-// show
-div#show{
-    div.img{
-        width: 250px;
-        img{
-            width: 100%;
-        }
-    }
+#admin{
+  height: 100vh;
+  display:flex;
+
+  #wrapper{
+    flex-grow: 1;
+  }
+  #sidebarMenu {
+    background-color: black;
+    color: white;
+  }
 }

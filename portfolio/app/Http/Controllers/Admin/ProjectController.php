@@ -2,77 +2,74 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Type;
+use App\Models\Language;
+use App\Models\Project;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
-
-use GuzzleHttp\Psr7\Message;
 use Illuminate\Http\Request;
-use App\Models\Project;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     *
      */
     public function index()
     {
-        if (Auth::user()->isAdmin()) {
-            $projects = Project::all();
-        } else {
-            $userId = Auth::id();
-            $projects = Project::where('user_id', userId)->get();
-        }
+        $projects = Project::all();
 
-        return view('admin.projects.index', compact('projects'));
+
+        return view('admin.projects.index', compact('projects', )); //'languanges'));
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * 
+     * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Project $project)
     {
-        return view('admin.projects.create');
+        $types = Type::all();
+        $languages = Language::all();
+        return view('admin.projects.create', compact('project', 'types', 'languages'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
      */
     public function store(StoreProjectRequest $request)
     {
-        $userId = Auth::id();
         $data = $request->validated();
-        $slug = Project::generateSlug($request->title);
+        $slug = Project::generateSlug($request->name_proj);
         $data['slug'] = $slug;
-        $data['user_id'] = $userId;
         if ($request->hasFile('cover_image')) {
             $path = Storage::disk('public')->put('project_images', $request->cover_image);
             $data['cover_image'] = $path;
         }
-
-
         $new_project = Project::create($data);
+        if ($request->has('languages')) {
+            $new_project->languages()->attach($request->languages);
+        }
         return redirect()->route('admin.projects.show', $new_project->slug);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Project $project
      * @return \Illuminate\Http\Response
      */
     public function show(Project $project)
     {
-        if (!Auth::user()->isAdmin() && $project->user_id !== Auth::id()) {
-            abort(403);
-        }
+        //dd($project);
         return view('admin.projects.show', compact('project'));
     }
 
@@ -80,30 +77,29 @@ class ProjectController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
+     * @return \Illuminate\Http\Response
      */
     public function edit(Project $project)
     {
-        if (!Auth::user()->isAdmin() && $project->user_id !== Auth::id()) {
-            abort(403);
-        }
-        return view('admin.projects.edit', compact('project'));
+        $types = Type::all();
+        $languages = Language::all();
+        return view('admin.projects.edit', compact('project', 'types', 'languages'));
     }
+
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
+     * @return \Illuminate\Http\Response
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        if (!Auth::user()->isAdmin() && $project->user_id !== Auth::id()) {
-            abort(403);
-        }
-        $data = $request->validated();
-        $slug = Project::generateSlug($request->title);
-        $data['slug'] = $slug;
 
+        $data = $request->validated();
+        $slug = Project::generateSlug($request->name_proj);
+        $data['slug'] = $slug;
         if ($request->hasFile('cover_image')) {
             if ($project->cover_image) {
                 Storage::delete($project->cover_image);
@@ -112,24 +108,23 @@ class ProjectController extends Controller
             $path = Storage::disk('public')->put('project_images', $request->cover_image);
             $data['cover_image'] = $path;
         }
+        $project->languages()->sync($request->languages);
         $modifica = $project->name_proj;
 
-
         $project->update($data);
-        return redirect()->route('admin.projects.index')->with('message', "$project->title update successfuly");
+        return redirect()->route('admin.projects.index')->with('message', "$modifica updated successfully");
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Project $project
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function destroy(Project $project)
     {
+        $cancellato = $project->name_proj;
         $project->delete();
-        return redirect()->route('admin.projects.index')->with('message', "$project->title deleted successfuly");
-        // $post->delete();
-        // return redirect()->route('admin.posts.index')->with('message', "$post->title deleted successfully");
+        return redirect()->route('admin.projects.index')->with('message', "$cancellato delete successfully");
     }
 }

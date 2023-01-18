@@ -20,7 +20,10 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        $this->call([ProjectTableSeeder::class]);
-        // php artisan db:seed
+        $this->call([
+            ProjectTableSeeder::class,
+            TypeSeeder::class,
+            LanguageSeeder::class
+        ]);
     }
 }
